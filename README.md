@@ -37,6 +37,7 @@ To streamline the rest of the tutorial define the key configuration settings and
 ```
 PROJECT_ID=$(gcloud config get-value project)
 ```
+
 > `PROJECT_ID` holds the project id generated at the start of the tutorial.
 
 ```
@@ -63,7 +64,6 @@ REGION=us-west1
 
 > `REGION` holds the region in which to deploy the vault-server.
 
-
 Enable the Cloud KMS, Cloud Run, Cloud Storage, and Secret Manager APIs:
 
 ```
@@ -85,6 +85,7 @@ Create a GCS storage bucket to hold Vault's encrypted data:
 ```
 gsutil mb gs://${GCS_BUCKET_NAME}
 ```
+
 ```
 Creating gs://vault-on-cloud-run-XXXXXX-data/...
 ```
@@ -141,14 +142,14 @@ gcloud kms keys add-iam-policy-binding seal \
 
 Deploy the `vault-server` Cloud Run service:
 
-> The initial deployment will be made private to prevent someone else from initializing the Vault server. Clients will need to [provide authentication credentials](https://cloud.google.com/run/docs/authenticating/developers) that will be validated by the Cloud Run control plane. After Vault has been initialized the Cloud Run deployment will be updated to bypass Cloud Run authentication and delegate the authentication to Vault. 
+> The initial deployment will be made private to prevent someone else from initializing the Vault server. Clients will need to [provide authentication credentials](https://cloud.google.com/run/docs/authenticating/developers) that will be validated by the Cloud Run control plane. After Vault has been initialized the Cloud Run deployment will be updated to bypass Cloud Run authentication and delegate the authentication to Vault.
 
 ```
 gcloud beta run deploy vault-server \
   --no-allow-unauthenticated \
   --concurrency 50 \
   --cpu 2 \
-  --image gcr.io/hightowerlabs/vault:1.7.1 \
+  --image gcr.io/hightowerlabs/vault:1.10.1 \
   --no-cpu-throttling \
   --memory '2G' \
   --min-instances 1 \
@@ -200,7 +201,7 @@ curl -s -X GET \
   "n": 0,
   "progress": 0,
   "nonce": "",
-  "version": "1.7.1",
+  "version": "1.10.1",
   "migration": false,
   "recovery_seal": true,
   "storage_type": "gcs"
@@ -247,6 +248,7 @@ At this point the Vault server has been initialized. If you list the GCS storage
 ```
 gsutil ls gs://${GCS_BUCKET_NAME}
 ```
+
 ```
 gs://vault-on-cloud-run-XXXXXX-data/core/
 gs://vault-on-cloud-run-XXXXXX-data/logical/
@@ -255,14 +257,14 @@ gs://vault-on-cloud-run-XXXXXX-data/sys/
 
 Now that Vault has been initialized make the `vault-server` service [public](https://cloud.google.com/run/docs/authenticating/public):
 
-> Requests to Vault will no longer be authenticated by the Cloud Run control plane. Requests will be authenticated directly by Vault. 
+> Requests to Vault will no longer be authenticated by the Cloud Run control plane. Requests will be authenticated directly by Vault.
 
 ```
 gcloud beta run deploy vault-server \
   --allow-unauthenticated \
   --concurrency 50 \
   --cpu 2 \
-  --image gcr.io/hightowerlabs/vault:1.7.1 \
+  --image gcr.io/hightowerlabs/vault:1.10.1 \
   --no-cpu-throttling \
   --memory '2G' \
   --min-instances 1 \
@@ -296,7 +298,7 @@ vault version
 ```
 
 ```
-Vault v1.7.1 (917142287996a005cb1ed9d96d00d06a0590e44e)
+Vault v1.10.1 ('e452e9b30a9c2c8adfa1611c26eb472090adc767+CHANGES')
 ```
 
 Configure the vault CLI to use the `vault-server` Cloud Run service URL by setting the `VAULT_ADDR` environment variable:
@@ -322,7 +324,7 @@ Initialized              true
 Sealed                   false
 Total Recovery Shares    1
 Threshold                1
-Version                  1.7.1
+Version                  1.10.1
 Storage Type             gcs
 Cluster Name             vault-cluster-XXXXXXXX
 Cluster ID               XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
